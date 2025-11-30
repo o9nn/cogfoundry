@@ -84,12 +84,31 @@ For cognitive cities development and distributed AI orchestration:
 1. **Initialize CogFoundry Orchestration:**
    ```bash
    cd cogfoundry-orchestration
-   python orchestration-engine.py --init
+   python orchestration-engine.py
    ```
 
-2. **Connect to Cognitive Cities:**
+2. **Generate Domain-Specific Kernels:**
    ```python
-   from cogfoundry_orchestration import CogFoundryOrchestrationEngine
+   from universal_kernel_generator import UniversalKernelGenerator
+   
+   generator = UniversalKernelGenerator()
+   kernel = generator.generate_computing_kernel(order=4)
+   print(f"Grip: {kernel.grip_metric:.4f}")
+   ```
+
+3. **Evolve Self-Optimizing Kernels:**
+   ```python
+   from ontogenesis import EvolutionEngine, DomainType
+   
+   engine = EvolutionEngine(population_size=20, domain=DomainType.COMPUTING)
+   engine.initialize_population()
+   history = engine.run_evolution(max_generations=30)
+   best = engine.get_best_kernel()
+   ```
+
+4. **Orchestrate Cognitive Cities Deployment:**
+   ```python
+   from orchestration_engine import CogFoundryOrchestrationEngine
    
    orchestrator = CogFoundryOrchestrationEngine()
    await orchestrator.initialize()
@@ -99,12 +118,21 @@ For cognitive cities development and distributed AI orchestration:
        "name": "distributed_neural_network",
        "target_cities": ["cogcities", "cogpilot", "cosmo"]
    })
+   
+   # Deploy evolved computational kernels
+   await orchestrator.orchestrate_kernel_deployment(
+       domain="computing",
+       target_cities=["cogcities", "cogpilot"]
+   )
    ```
 
-3. **Enable CogPilot Integration:**
-   - Configure MCP Master Builder protocols
-   - Install Meta-LSP extensions for your IDE
-   - Connect to neural transport channels
+5. **Run Complete Examples:**
+   ```bash
+   cd cogfoundry-orchestration/examples
+   python3 python_sdk_example.py
+   ```
+
+📚 **See [Getting Started Guide](./cogfoundry-orchestration/GETTING_STARTED.md) for comprehensive documentation.**
 
 ## 🚀 Traditional Foundry Local Quickstart
 

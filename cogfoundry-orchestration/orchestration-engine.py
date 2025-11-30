@@ -26,8 +26,23 @@ except ImportError:
     # Fallback if cognitive_ecology_demo not available
     class OperationalizedRAGFabric:
         def __init__(self): pass
+        async def register_cognitive_city(self, city): pass
     class CognitiveCity:
-        def __init__(self, **kwargs): pass
+        def __init__(self, **kwargs): 
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+
+# Initialize module-level logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+try:
+    from universal_kernel_generator import UniversalKernelGenerator, DomainType
+    from ontogenesis import EvolutionEngine, LivingKernel
+    KERNEL_SYSTEM_AVAILABLE = True
+except ImportError:
+    KERNEL_SYSTEM_AVAILABLE = False
+    logger.warning("Kernel generation system not available")
 
 @dataclass
 class CogFoundryConfig:
@@ -98,6 +113,14 @@ class CogFoundryOrchestrationEngine:
         self.mcp_master_builder = None  # To be initialized
         self.meta_lsp_protocols = None  # To be initialized
         self.vm_daemon_mlops = None     # To be initialized
+        
+        # Initialize kernel generation system
+        if KERNEL_SYSTEM_AVAILABLE:
+            self.kernel_generator = UniversalKernelGenerator()
+            self.evolution_engines = {}  # Domain -> EvolutionEngine
+        else:
+            self.kernel_generator = None
+            self.evolution_engines = {}
         
     async def initialize(self) -> bool:
         """Initialize the CogFoundry orchestration engine"""
@@ -349,7 +372,77 @@ class CogFoundryOrchestrationEngine:
             "autogenesis_readiness": 0.1 if self.config.autogenesis_enabled else 0.0
         }
         
+        # Add kernel evolution metrics if available
+        if KERNEL_SYSTEM_AVAILABLE and self.evolution_engines:
+            kernel_metrics = {}
+            for domain, engine in self.evolution_engines.items():
+                best_kernel = engine.get_best_kernel()
+                kernel_metrics[domain] = {
+                    "best_fitness": best_kernel.fitness,
+                    "generation": best_kernel.genome.generation,
+                    "development_stage": best_kernel.development_stage.value
+                }
+            health_metrics["kernel_evolution"] = kernel_metrics
+        
         return health_metrics
+    
+    async def orchestrate_kernel_deployment(self, domain: str, target_cities: List[str]) -> Dict[str, Any]:
+        """
+        Orchestrate deployment of evolved kernels across cognitive cities
+        """
+        if not KERNEL_SYSTEM_AVAILABLE:
+            self.logger.warning("Kernel system not available")
+            return {"status": "unavailable"}
+        
+        self.logger.info(f"🧬 Orchestrating kernel deployment for {domain} domain...")
+        
+        # Map domain string to DomainType
+        domain_map = {
+            "physics": DomainType.PHYSICS,
+            "consciousness": DomainType.CONSCIOUSNESS,
+            "computing": DomainType.COMPUTING,
+            "biology": DomainType.BIOLOGY
+        }
+        
+        domain_type = domain_map.get(domain.lower(), DomainType.COMPUTING)
+        
+        # Create or get evolution engine for this domain
+        if domain not in self.evolution_engines:
+            engine = EvolutionEngine(
+                population_size=20,
+                domain=domain_type,
+                kernel_order=4
+            )
+            engine.initialize_population()
+            
+            # Run initial evolution
+            self.logger.info(f"  Running initial evolution for {domain}...")
+            history = engine.run_evolution(max_generations=30, fitness_threshold=0.90)
+            
+            self.evolution_engines[domain] = engine
+        else:
+            engine = self.evolution_engines[domain]
+        
+        # Get best kernel
+        best_kernel = engine.get_best_kernel()
+        
+        # Deploy to target cities
+        deployment_results = {}
+        for city_namespace in target_cities:
+            if city_namespace in self.state.connected_cities:
+                deployment_results[city_namespace] = {
+                    "status": "deployed",
+                    "kernel_fitness": best_kernel.fitness,
+                    "kernel_generation": best_kernel.genome.generation,
+                    "grip_metric": best_kernel.kernel.grip_metric
+                }
+        
+        return {
+            "domain": domain,
+            "best_fitness": best_kernel.fitness,
+            "kernel_generation": best_kernel.genome.generation,
+            "deployments": deployment_results
+        }
     
     def save_state(self, filepath: Path = None):
         """Save current orchestration state"""
@@ -405,11 +498,28 @@ async def main():
         deployment_result = await orchestrator.orchestrate_deployment(deployment_spec)
         print(f"Deployment Result: {deployment_result['deployment_id']}")
         
+        # Demonstrate kernel-based deployment if available
+        if KERNEL_SYSTEM_AVAILABLE:
+            print("\n🧬 Demonstrating Kernel-Based Deployment...")
+            kernel_deployment = await orchestrator.orchestrate_kernel_deployment(
+                domain="computing",
+                target_cities=["github.com/organizations/cogcities", "github.com/organizations/cogpilot"]
+            )
+            print(f"Kernel Deployment:")
+            print(f"  Domain: {kernel_deployment['domain']}")
+            print(f"  Best Fitness: {kernel_deployment['best_fitness']:.4f}")
+            print(f"  Generation: {kernel_deployment['kernel_generation']}")
+        
         # Monitor ecosystem
         health = await orchestrator.monitor_ecosystem_health()
         print(f"\n📊 Ecosystem Health:")
         for metric, value in health.items():
-            print(f"  {metric}: {value}")
+            if isinstance(value, dict):
+                print(f"  {metric}:")
+                for k, v in value.items():
+                    print(f"    {k}: {v}")
+            else:
+                print(f"  {metric}: {value}")
         
         # Save state
         orchestrator.save_state()
