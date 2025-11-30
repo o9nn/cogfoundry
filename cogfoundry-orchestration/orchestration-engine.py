@@ -32,6 +32,10 @@ except ImportError:
             for key, value in kwargs.items():
                 setattr(self, key, value)
 
+# Initialize module-level logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 try:
     from universal_kernel_generator import UniversalKernelGenerator, DomainType
     from ontogenesis import EvolutionEngine, LivingKernel

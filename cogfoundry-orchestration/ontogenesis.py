@@ -64,6 +64,11 @@ class KernelGenome:
     
     def crossover(self, other: 'KernelGenome') -> 'KernelGenome':
         """Genetic crossover with another genome"""
+        # Handle edge case of single gene
+        if len(self.coefficient_genes) < 2:
+            # Return a copy with mutation if too small for crossover
+            return self.mutate(mutation_rate=0.2)
+        
         # Single-point crossover
         crossover_point = np.random.randint(1, len(self.coefficient_genes))
         

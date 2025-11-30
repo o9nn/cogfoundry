@@ -83,6 +83,8 @@ class UniversalKernelGenerator:
     """
     
     # OEIS A000081: Number of rooted trees with n nodes
+    # Used as reference for elementary differential enumeration
+    # [n=1: 1, n=2: 1, n=3: 2, n=4: 4, n=5: 9, n=6: 20, n=7: 48, n=8: 115, n=9: 286, n=10: 719]
     ROOTED_TREES_COUNT = [1, 1, 2, 4, 9, 20, 48, 115, 286, 719]
     
     def __init__(self):
@@ -104,12 +106,12 @@ class UniversalKernelGenerator:
                 symmetry_factor=1
             ))
         
-        # Order 2: Two possible trees
+        # Order 2: One unique tree structure (second tree is isomorphic)
+        # OEIS A000081 shows 1 tree for n=2 (single node with one child)
         if max_order >= 2:
-            # Tree: (τ,τ) - two children
             differentials.append(ElementaryDifferential(
                 order=2,
-                tree_structure="(τ,τ)",
+                tree_structure="[τ]",
                 coefficient=0.5,
                 symmetry_factor=2
             ))
